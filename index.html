@@ -1,1 +1,341 @@
-# Foglio-ore
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Foglio Ore">
+<title>Foglio Ore</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;min-height:100vh;color:#1c1c1e}
+.screen{display:none;min-height:100vh;padding-bottom:80px}
+.screen.active{display:block}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #c6c6c8;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;padding:10px 0 6px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#8e8e93;font-size:10px;cursor:pointer}
+.nav-btn.active{color:#007aff}
+.nav-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.header{background:#fff;padding:16px 16px 12px;border-bottom:0.5px solid #c6c6c8;position:sticky;top:0;z-index:50}
+.header h1{font-size:17px;font-weight:600;text-align:center}
+.header-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.month-nav{display:flex;align-items:center;gap:8px}
+.month-nav button{background:none;border:none;color:#007aff;font-size:20px;cursor:pointer;padding:4px 8px;line-height:1}
+.month-title{font-size:17px;font-weight:600;min-width:140px;text-align:center}
+.export-btn{background:#007aff;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:500;cursor:pointer}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 8px 0;gap:2px}
+.weekday{text-align:center;font-size:12px;color:#8e8e93;padding:4px 0;font-weight:500}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 8px;gap:4px}
+.day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;position:relative;font-size:15px}
+.day-cell:active{background:#e5e5ea}
+.day-cell.today{background:#007aff;color:#fff;font-weight:600}
+.day-cell.has-data::after{content:'';position:absolute;bottom:3px;width:5px;height:5px;background:#34c759;border-radius:50%}
+.day-cell.today.has-data::after{background:#fff}
+.day-cell.empty{pointer-events:none}
+.summary-bar{margin:12px 16px 0;background:#fff;border-radius:12px;padding:12px 8px;display:flex;justify-content:space-around}
+.sum-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sum-val{font-size:14px;font-weight:600;color:#1c1c1e}
+.sum-lbl{font-size:10px;color:#8e8e93}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-header{background:#fff;border-radius:16px 16px 0 0;padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #c6c6c8;position:sticky;top:0;z-index:10}
+.modal-header h2{font-size:15px;font-weight:600}
+.modal-header button{background:none;border:none;color:#007aff;font-size:16px;font-weight:500;cursor:pointer;padding:4px 8px}
+.modal-header .save-btn{font-weight:700}
+.form-section{margin:12px 16px 0}
+.form-section-title{font-size:12px;color:#8e8e93;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;padding:0 4px}
+.form-card{background:#fff;border-radius:12px;overflow:hidden}
+.form-row{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
+.form-row:last-child{border-bottom:none}
+.form-row label{font-size:15px;color:#1c1c1e;min-width:110px}
+.form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff}
+.form-row input::placeholder{color:#c7c7cc}
+.hours-ctrl{display:flex;align-items:center;gap:8px;margin-left:auto}
+.hours-ctrl button{background:none;border:none;color:#007aff;font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
+.hours-val{font-size:15px;font-weight:500;min-width:36px;text-align:center;color:#1c1c1e}
+.toggle-row{display:flex;align-items:center;padding:12px 16px}
+.toggle-row label{font-size:15px;flex:1}
+input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
+.toggle{width:51px;height:31px;background:#e5e5ea;border-radius:16px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.toggle{background:#34c759}
+input:checked+.toggle::after{transform:translateX(20px)}
+.settings-content{padding:16px}
+.settings-card{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
+.settings-row:last-child{border-bottom:none}
+.settings-row label{font-size:15px;min-width:80px}
+.settings-row input[type=text]{flex:1;border:none;outline:none;font-size:15px;color:#007aff;background:transparent}
+.settings-note{font-size:13px;color:#8e8e93;text-align:center;padding:0 16px}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="screen-cal">
+  <div class="header">
+    <h1>Foglio Ore</h1>
+    <div class="header-row">
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">&#8249;</button>
+        <span class="month-title" id="monthTitle"></span>
+        <button onclick="changeMonth(1)">&#8250;</button>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Esporta CSV</button>
+    </div>
+  </div>
+  <div class="weekdays">
+    <div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mer</div>
+    <div class="weekday">Gio</div><div class="weekday">Ven</div><div class="weekday">Sab</div><div class="weekday">Dom</div>
+  </div>
+  <div class="days-grid" id="daysGrid"></div>
+  <div class="summary-bar" id="summaryBar"></div>
+</div>
+
+<div class="screen" id="screen-set">
+  <div class="header"><h1>Impostazioni</h1></div>
+  <div class="settings-content">
+    <div class="settings-card">
+      <div class="settings-row">
+        <label>Nome</label>
+        <input type="text" id="nameInput" placeholder="Nome Cognome" oninput="saveName()">
+      </div>
+    </div>
+    <p class="settings-note">Il nome appare nel file CSV esportato come intestazione del foglio ore mensile.</p>
+    <br>
+    <div class="settings-card">
+      <div class="settings-row">
+        <label style="flex:1;font-size:15px">&#128276; Promemoria serale</label>
+        <span style="font-size:14px;color:#8e8e93">Vedi sotto</span>
+      </div>
+    </div>
+    <p class="settings-note">Per il promemoria alle 21:00 apri l'app Orologio su iPhone, vai in Sveglie e aggiungi una sveglia alle 21:00 con etichetta "Foglio Ore".</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <button onclick="closeModal()">Annulla</button>
+      <h2 id="modalTitle"></h2>
+      <button class="save-btn" onclick="saveDay()">Salva</button>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">Dati</div>
+      <div class="form-card">
+        <div class="form-row">
+          <label>Cliente</label>
+          <input type="text" id="f-cliente" placeholder="Nome cliente">
+        </div>
+        <div class="form-row">
+          <label>Descrizione</label>
+          <input type="text" id="f-descr" placeholder="Attivita svolta">
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">Ore</div>
+      <div class="form-card">
+        <div class="form-row">
+          <label>Ore Ordinarie</label>
+          <div class="hours-ctrl">
+            <button onclick="adjHours('ord',-0.5)">&#8722;</button>
+            <span class="hours-val" id="v-ord">0h</span>
+            <button onclick="adjHours('ord',0.5)">+</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Ore Extra</label>
+          <div class="hours-ctrl">
+            <button onclick="adjHours('ext',-0.5)">&#8722;</button>
+            <span class="hours-val" id="v-ext">0h</span>
+            <button onclick="adjHours('ext',0.5)">+</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Ore Ferie</label>
+          <div class="hours-ctrl">
+            <button onclick="adjHours('fer',-0.5)">&#8722;</button>
+            <span class="hours-val" id="v-fer">0h</span>
+            <button onclick="adjHours('fer',0.5)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">Altro</div>
+      <div class="form-card">
+        <div class="form-row">
+          <label>Nota Spese (&#8364;)</label>
+          <input type="number" id="f-spese" placeholder="0.00" step="0.01" min="0" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff">
+        </div>
+        <div class="form-row toggle-row">
+          <label>Notte Fuori</label>
+          <input type="checkbox" id="f-notte">
+          <label class="toggle" for="f-notte"></label>
+        </div>
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" id="nav-cal" onclick="showScreen('cal')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </button>
+  <button class="nav-btn" id="nav-set" onclick="showScreen('set')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Impostazioni
+  </button>
+</nav>
+
+<script>
+var data={};
+var userName='Francesco Bianco';
+var curMonth=new Date();curMonth.setDate(1);
+var editKey=null;
+var hours={ord:0,ext:0,fer:0};
+var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function load(){
+  try{var d=localStorage.getItem('fo_data');if(d)data=JSON.parse(d);}catch(e){}
+  try{var n=localStorage.getItem('fo_name');if(n){userName=n;var el=document.getElementById('nameInput');if(el)el.value=n;}}catch(e){}
+}
+function persist(){
+  try{localStorage.setItem('fo_data',JSON.stringify(data));localStorage.setItem('fo_name',userName);}catch(e){}
+}
+function key(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function showScreen(s){
+  document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.nav-btn').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('screen-'+s).classList.add('active');
+  document.getElementById('nav-'+s).classList.add('active');
+  if(s==='set'){var el=document.getElementById('nameInput');if(el)el.value=userName;}
+}
+function saveName(){
+  userName=document.getElementById('nameInput').value;
+  persist();
+}
+function changeMonth(d){
+  curMonth.setMonth(curMonth.getMonth()+d);
+  renderCalendar();
+}
+function renderCalendar(){
+  var y=curMonth.getFullYear(),m=curMonth.getMonth();
+  document.getElementById('monthTitle').textContent=MONTHS[m]+' '+y;
+  var first=new Date(y,m,1);
+  var last=new Date(y,m+1,0);
+  var startDay=first.getDay();if(startDay===0)startDay=7;startDay--;
+  var grid=document.getElementById('daysGrid');
+  grid.innerHTML='';
+  var today=new Date();
+  for(var i=0;i<startDay;i++){var b=document.createElement('div');b.className='day-cell empty';grid.appendChild(b);}
+  for(var d=1;d<=last.getDate();d++){
+    var date=new Date(y,m,d);
+    var k=key(date);
+    var cell=document.createElement('div');
+    cell.className='day-cell';
+    if(date.getFullYear()===today.getFullYear()&&date.getMonth()===today.getMonth()&&date.getDate()===today.getDate())cell.classList.add('today');
+    if(data[k]&&hasData(data[k]))cell.classList.add('has-data');
+    cell.textContent=d;
+    (function(dk,dd){cell.onclick=function(){openModal(dk,dd);};})(k,date);
+    grid.appendChild(cell);
+  }
+  renderSummary();
+}
+function hasData(e){
+  return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.spese!=0||e.notte);
+}
+function renderSummary(){
+  var y=curMonth.getFullYear(),m=curMonth.getMonth();
+  var last=new Date(y,m+1,0).getDate();
+  var tOrd=0,tExt=0,tFer=0,tSpe=0,tNot=0;
+  for(var d=1;d<=last;d++){
+    var e=data[key(new Date(y,m,d))];
+    if(e){tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tSpe+=e.spese||0;if(e.notte)tNot++;}
+  }
+  function fh(v){return v%1===0?v+'h':v.toFixed(1)+'h';}
+  document.getElementById('summaryBar').innerHTML=
+    '<div class="sum-item"><span class="sum-val">'+fh(tOrd)+'</span><span class="sum-lbl">Ordinarie</span></div>'+
+    '<div class="sum-item"><span class="sum-val">'+fh(tExt)+'</span><span class="sum-lbl">Extra</span></div>'+
+    '<div class="sum-item"><span class="sum-val">'+fh(tFer)+'</span><span class="sum-lbl">Ferie</span></div>'+
+    '<div class="sum-item"><span class="sum-val">'+tNot+'</span><span class="sum-lbl">Notti</span></div>'+
+    '<div class="sum-item"><span class="sum-val">'+tSpe.toFixed(0)+'&#8364;</span><span class="sum-lbl">Spese</span></div>';
+}
+function openModal(k,date){
+  editKey=k;
+  var e=data[k]||{};
+  hours.ord=e.ord||0;hours.ext=e.ext||0;hours.fer=e.fer||0;
+  document.getElementById('f-cliente').value=e.cliente||'';
+  document.getElementById('f-descr').value=e.descr||'';
+  document.getElementById('f-spese').value=e.spese>0?e.spese:'';
+  document.getElementById('f-notte').checked=!!e.notte;
+  updHours();
+  var DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
+  document.getElementById('modalTitle').textContent=DAYS[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+function adjHours(t,d){
+  hours[t]=Math.max(0,+(hours[t]+d).toFixed(1));
+  updHours();
+}
+function updHours(){
+  function fh(v){return v%1===0?v+'h':v.toFixed(1)+'h';}
+  document.getElementById('v-ord').textContent=fh(hours.ord);
+  document.getElementById('v-ext').textContent=fh(hours.ext);
+  document.getElementById('v-fer').textContent=fh(hours.fer);
+}
+function saveDay(){
+  var e={
+    cliente:document.getElementById('f-cliente').value.trim(),
+    descr:document.getElementById('f-descr').value.trim(),
+    ord:hours.ord,ext:hours.ext,fer:hours.fer,
+    spese:parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
+    notte:document.getElementById('f-notte').checked
+  };
+  data[editKey]=e;
+  persist();
+  closeModal();
+  renderCalendar();
+}
+function exportCSV(){
+  var y=curMonth.getFullYear(),m=curMonth.getMonth();
+  var mName=MONTHS[m].toUpperCase()+' '+y;
+  var lines=[];
+  lines.push('NOME: '+userName+';;;FOGLIO ORE MESE DI: '+mName+';;;;');
+  lines.push(';;;;;;;;');
+  lines.push('DATA;CLIENTE;DESCRIZIONE;ORE ORDINARIE;ORE EXTRA;ORE FERIE;NOTA SPESE;NOTTE FUORI');
+  var last=new Date(y,m+1,0).getDate();
+  var tOrd=0,tExt=0,tFer=0,tSpe=0;
+  function fh(v){return v<=0?'':v%1===0?''+v:v.toFixed(1);}
+  function esc(s){return s.indexOf(';')>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;}
+  for(var d=1;d<=last;d++){
+    var e=data[key(new Date(y,m,d))]||{};
+    tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tSpe+=e.spese||0;
+    lines.push([d,esc(e.cliente||''),esc(e.descr||''),fh(e.ord||0),fh(e.ext||0),fh(e.fer||0),e.spese>0?(e.spese.toFixed(2)+' \u20ac'):'',e.notte?'\u2713':''].join(';'));
+  }
+  function fht(v){return v%1===0?''+v:v.toFixed(1);}
+  lines.push(';TOTALE MESE:;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+tSpe.toFixed(2)+' \u20ac;');
+  var csv='\uFEFF'+lines.join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='FoglioOre_'+y+'-'+String(m+1).padStart(2,'0')+'.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+load();
+renderCalendar();
+</script>
+</body>
+</html>
