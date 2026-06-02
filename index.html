@@ -51,16 +51,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-row label{font-size:15px;color:#1c1c1e;min-width:110px}
 .form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff}
 .form-row input::placeholder{color:#c7c7cc}
-.hours-ctrl{display:flex;align-items:center;gap:8px;margin-left:auto}
-.hours-ctrl button{background:none;border:none;color:#007aff;font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
-.hours-val{font-size:15px;font-weight:500;min-width:36px;text-align:center;color:#1c1c1e}
-.toggle-row{display:flex;align-items:center;padding:12px 16px}
-.toggle-row label{font-size:15px;flex:1}
+.form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0}
+.toggle-row{display:flex;align-items:center;padding:10px 16px}
+.toggle-row label.lbl{font-size:15px;flex:1}
 input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
-.toggle{width:51px;height:31px;background:#e5e5ea;border-radius:16px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
-.toggle::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle{width:40px;height:24px;background:#e5e5ea;border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 input:checked+.toggle{background:#34c759}
-input:checked+.toggle::after{transform:translateX(20px)}
+input:checked+.toggle::after{transform:translateX(16px)}
 .settings-content{padding:16px}
 .settings-card{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:16px}
 .settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
@@ -138,27 +136,19 @@ input:checked+.toggle::after{transform:translateX(20px)}
       <div class="form-card">
         <div class="form-row">
           <label>Ore Ordinarie</label>
-          <div class="hours-ctrl">
-            <button onclick="adjHours('ord',-0.5)">&#8722;</button>
-            <span class="hours-val" id="v-ord">0h</span>
-            <button onclick="adjHours('ord',0.5)">+</button>
-          </div>
+          <select id="s-ord"></select>
         </div>
         <div class="form-row">
           <label>Ore Extra</label>
-          <div class="hours-ctrl">
-            <button onclick="adjHours('ext',-0.5)">&#8722;</button>
-            <span class="hours-val" id="v-ext">0h</span>
-            <button onclick="adjHours('ext',0.5)">+</button>
-          </div>
+          <select id="s-ext"></select>
         </div>
         <div class="form-row">
           <label>Ore Ferie</label>
-          <div class="hours-ctrl">
-            <button onclick="adjHours('fer',-0.5)">&#8722;</button>
-            <span class="hours-val" id="v-fer">0h</span>
-            <button onclick="adjHours('fer',0.5)">+</button>
-          </div>
+          <select id="s-fer"></select>
+        </div>
+        <div class="form-row">
+          <label>Ore Permesso</label>
+          <select id="s-per"></select>
         </div>
       </div>
     </div>
@@ -170,7 +160,7 @@ input:checked+.toggle::after{transform:translateX(20px)}
           <input type="number" id="f-spese" placeholder="0.00" step="0.01" min="0" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff">
         </div>
         <div class="form-row toggle-row">
-          <label>Notte Fuori</label>
+          <label class="lbl">Notte Fuori</label>
           <input type="checkbox" id="f-notte">
           <label class="toggle" for="f-notte"></label>
         </div>
@@ -196,8 +186,18 @@ var data={};
 var userName='Francesco Bianco';
 var curMonth=new Date();curMonth.setDate(1);
 var editKey=null;
-var hours={ord:0,ext:0,fer:0};
 var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function buildSelects(){
+  var opts='<option value="0">0h</option>';
+  for(var h=0.5;h<=24;h+=0.5){
+    var lbl=h%1===0?h+'h':h.toFixed(1)+'h';
+    opts+='<option value="'+h+'">'+lbl+'</option>';
+  }
+  ['s-ord','s-ext','s-fer','s-per'].forEach(function(id){
+    document.getElementById(id).innerHTML=opts;
+  });
+}
 
 function load(){
   try{var d=localStorage.getItem('fo_data');if(d)data=JSON.parse(d);}catch(e){}
@@ -248,7 +248,7 @@ function renderCalendar(){
   renderSummary();
 }
 function hasData(e){
-  return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.spese!=0||e.notte);
+  return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte);
 }
 function renderSummary(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
@@ -269,12 +269,14 @@ function renderSummary(){
 function openModal(k,date){
   editKey=k;
   var e=data[k]||{};
-  hours.ord=e.ord||0;hours.ext=e.ext||0;hours.fer=e.fer||0;
   document.getElementById('f-cliente').value=e.cliente||'';
   document.getElementById('f-descr').value=e.descr||'';
   document.getElementById('f-spese').value=e.spese>0?e.spese:'';
   document.getElementById('f-notte').checked=!!e.notte;
-  updHours();
+  document.getElementById('s-ord').value=e.ord||0;
+  document.getElementById('s-ext').value=e.ext||0;
+  document.getElementById('s-fer').value=e.fer||0;
+  document.getElementById('s-per').value=e.per||0;
   var DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
   document.getElementById('modalTitle').textContent=DAYS[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
   document.getElementById('modalOverlay').classList.add('open');
@@ -285,21 +287,14 @@ function closeModal(){
   document.body.style.overflow='';
 }
 function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
-function adjHours(t,d){
-  hours[t]=Math.max(0,+(hours[t]+d).toFixed(1));
-  updHours();
-}
-function updHours(){
-  function fh(v){return v%1===0?v+'h':v.toFixed(1)+'h';}
-  document.getElementById('v-ord').textContent=fh(hours.ord);
-  document.getElementById('v-ext').textContent=fh(hours.ext);
-  document.getElementById('v-fer').textContent=fh(hours.fer);
-}
 function saveDay(){
   var e={
     cliente:document.getElementById('f-cliente').value.trim(),
     descr:document.getElementById('f-descr').value.trim(),
-    ord:hours.ord,ext:hours.ext,fer:hours.fer,
+    ord:parseFloat(document.getElementById('s-ord').value)||0,
+    ext:parseFloat(document.getElementById('s-ext').value)||0,
+    fer:parseFloat(document.getElementById('s-fer').value)||0,
+    per:parseFloat(document.getElementById('s-per').value)||0,
     spese:parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
     notte:document.getElementById('f-notte').checked
   };
@@ -312,28 +307,53 @@ function exportCSV(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   var mName=MONTHS[m].toUpperCase()+' '+y;
   var lines=[];
-  lines.push('NOME: '+userName+';;;FOGLIO ORE MESE DI: '+mName+';;;;');
-  lines.push(';;;;;;;;');
-  lines.push('DATA;CLIENTE;DESCRIZIONE;ORE ORDINARIE;ORE EXTRA;ORE FERIE;NOTA SPESE;NOTTE FUORI');
+  lines.push('NOME: '+userName+';;;;FOGLIO ORE MESE DI: '+mName+';;;;;');
+  lines.push(';;;;;;;;;');
+  lines.push('DATA;CLIENTE;DESCRIZIONE;ORE ORDINARIE;ORE EXTRA;ORE FERIE;ORE PERMESSO;NOTA SPESE;NOTTE FUORI');
   var last=new Date(y,m+1,0).getDate();
-  var tOrd=0,tExt=0,tFer=0,tSpe=0;
+  var tOrd=0,tExt=0,tFer=0,tPer=0,tSpe=0;
   function fh(v){return v<=0?'':v%1===0?''+v:v.toFixed(1);}
   function esc(s){return s.indexOf(';')>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;}
   for(var d=1;d<=last;d++){
     var e=data[key(new Date(y,m,d))]||{};
-    tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tSpe+=e.spese||0;
-    lines.push([d,esc(e.cliente||''),esc(e.descr||''),fh(e.ord||0),fh(e.ext||0),fh(e.fer||0),e.spese>0?(e.spese.toFixed(2)+' \u20ac'):'',e.notte?'\u2713':''].join(';'));
+    tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tPer+=e.per||0;tSpe+=e.spese||0;
+    lines.push([d,esc(e.cliente||''),esc(e.descr||''),fh(e.ord||0),fh(e.ext||0),fh(e.fer||0),fh(e.per||0),e.spese>0?(e.spese.toFixed(2)+' \u20ac'):'',e.notte?'\u2713':''].join(';'));
   }
   function fht(v){return v%1===0?''+v:v.toFixed(1);}
-  lines.push(';TOTALE MESE:;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+tSpe.toFixed(2)+' \u20ac;');
-  var csv='\uFEFF'+lines.join('\n');
-  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  lines.push(';TOTALE MESE:;;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+fht(tPer)+';'+tSpe.toFixed(2)+' \u20ac;');
+
+  var colWidths='<ColInfo ss:Index="1" ss:Width="17"/><ColInfo ss:Index="2" ss:Width="25"/><ColInfo ss:Index="3" ss:Width="17"/><ColInfo ss:Index="4" ss:Width="17"/><ColInfo ss:Index="5" ss:Width="17"/><ColInfo ss:Index="6" ss:Width="17"/><ColInfo ss:Index="7" ss:Width="17"/><ColInfo ss:Index="8" ss:Width="17"/><ColInfo ss:Index="9" ss:Width="17"/>';
+
+  var xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>';
+  xml+='<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+  xml+='<Worksheet ss:Name="Foglio Ore"><Table>'+colWidths;
+
+  var allLines=lines;
+  allLines.forEach(function(line){
+    xml+='<Row>';
+    line.split(';').forEach(function(cell){
+      var clean=cell.replace(/^"|"$/g,'').replace(/""/g,'"');
+      var isNum=clean!==''&&!isNaN(clean.replace(' \u20ac',''));
+      if(isNum&&clean.indexOf('\u2713')<0){
+        xml+='<Cell><Data ss:Type="Number">'+parseFloat(clean)+'</Data></Cell>';
+      } else {
+        xml+='<Cell><Data ss:Type="String">'+clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</Data></Cell>';
+      }
+    });
+    xml+='</Row>';
+  });
+
+  xml+='</Table></Worksheet></Workbook>';
+
+  var blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url;a.download='FoglioOre_'+y+'-'+String(m+1).padStart(2,'0')+'.csv';
+  a.href=url;
+  a.download='FoglioOre_'+y+'-'+String(m+1).padStart(2,'0')+'.xls';
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
+buildSelects();
 load();
 renderCalendar();
 </script>
