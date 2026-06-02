@@ -1,1 +1,0 @@
-# Foglio-ore
