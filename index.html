@@ -55,10 +55,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toggle-row{display:flex;align-items:center;padding:10px 16px}
 .toggle-row label.lbl{font-size:15px;flex:1}
 input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
-.toggle{width:20px;height:12px;background:#e5e5ea;border-radius:6px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle{width:20px;height:12px;background:#e5e5ea;border-radius:6px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block}
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
 input:checked+.toggle{background:#34c759}
 input:checked+.toggle::after{transform:translateX(8px)}
+.toggle-row{display:flex;align-items:center;padding:10px 16px}
 .settings-content{padding:16px}
 .settings-card{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:16px}
 .settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
