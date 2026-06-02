@@ -52,15 +52,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff}
 .form-row input::placeholder{color:#c7c7cc}
 .form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0}
-.toggle-row{display:flex;align-items:center;padding:10px 16px}
-.toggle-row .toggle{width:44px!important;max-width:44px!important}
-.toggle-row label.lbl{font-size:15px;flex:1}
-input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
-.toggle{width:44px;height:26px;background:#e5e5ea;border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.25)}
-input:checked+.toggle{background:#34c759}
-input:checked+.toggle::after{transform:translateX(18px)}
-.toggle-row{display:flex;align-items:center;padding:10px 16px}
+/* TOGGLE — usa appearance per forzare stile nativo iOS */
+.ios-toggle{
+  -webkit-appearance:none;
+  appearance:none;
+  width:44px;
+  height:26px;
+  background:#e5e5ea;
+  border-radius:13px;
+  position:relative;
+  cursor:pointer;
+  transition:background .2s;
+  flex-shrink:0;
+  flex-grow:0;
+  outline:none;
+  border:none;
+  margin:0;
+  padding:0;
+}
+.ios-toggle::after{
+  content:'';
+  position:absolute;
+  top:3px;left:3px;
+  width:20px;height:20px;
+  background:#fff;
+  border-radius:50%;
+  transition:transform .2s;
+  box-shadow:0 2px 4px rgba(0,0,0,.25);
+}
+.ios-toggle:checked{background:#34c759}
+.ios-toggle:checked::after{transform:translateX(18px)}
 .settings-content{padding:16px}
 .settings-card{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:16px}
 .settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
@@ -161,10 +182,9 @@ input:checked+.toggle::after{transform:translateX(18px)}
           <label>Nota Spese (&#8364;)</label>
           <input type="number" id="f-spese" placeholder="0.00" step="0.01" min="0" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff">
         </div>
-        <div class="form-row toggle-row">
-          <label class="lbl">Notte Fuori</label>
-          <input type="checkbox" id="f-notte">
-          <label class="toggle" for="f-notte"></label>
+        <div class="form-row" style="justify-content:space-between">
+          <span style="font-size:15px">Notte Fuori</span>
+          <input type="checkbox" id="f-notte" class="ios-toggle">
         </div>
       </div>
     </div>
@@ -200,7 +220,6 @@ function buildSelects(){
     document.getElementById(id).innerHTML=opts;
   });
 }
-
 function load(){
   try{var d=localStorage.getItem('fo_data');if(d)data=JSON.parse(d);}catch(e){}
   try{var n=localStorage.getItem('fo_name');if(n){userName=n;var el=document.getElementById('nameInput');if(el)el.value=n;}}catch(e){}
@@ -218,14 +237,8 @@ function showScreen(s){
   document.getElementById('nav-'+s).classList.add('active');
   if(s==='set'){var el=document.getElementById('nameInput');if(el)el.value=userName;}
 }
-function saveName(){
-  userName=document.getElementById('nameInput').value;
-  persist();
-}
-function changeMonth(d){
-  curMonth.setMonth(curMonth.getMonth()+d);
-  renderCalendar();
-}
+function saveName(){userName=document.getElementById('nameInput').value;persist();}
+function changeMonth(d){curMonth.setMonth(curMonth.getMonth()+d);renderCalendar();}
 function renderCalendar(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   document.getElementById('monthTitle').textContent=MONTHS[m]+' '+y;
@@ -249,9 +262,7 @@ function renderCalendar(){
   }
   renderSummary();
 }
-function hasData(e){
-  return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte);
-}
+function hasData(e){return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte);}
 function renderSummary(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   var last=new Date(y,m+1,0).getDate();
@@ -284,10 +295,7 @@ function openModal(k,date){
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
-function closeModal(){
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow='';
-}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';}
 function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
 function saveDay(){
   var e={
@@ -300,10 +308,7 @@ function saveDay(){
     spese:parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
     notte:document.getElementById('f-notte').checked
   };
-  data[editKey]=e;
-  persist();
-  closeModal();
-  renderCalendar();
+  data[editKey]=e;persist();closeModal();renderCalendar();
 }
 function exportCSV(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
@@ -323,41 +328,27 @@ function exportCSV(){
   }
   function fht(v){return v%1===0?''+v:v.toFixed(1);}
   lines.push(';TOTALE MESE:;;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+fht(tPer)+';'+tSpe.toFixed(2)+' \u20ac;');
-
-  var colWidths='<ColInfo ss:Index="1" ss:Width="17"/><ColInfo ss:Index="2" ss:Width="25"/><ColInfo ss:Index="3" ss:Width="17"/><ColInfo ss:Index="4" ss:Width="17"/><ColInfo ss:Index="5" ss:Width="17"/><ColInfo ss:Index="6" ss:Width="17"/><ColInfo ss:Index="7" ss:Width="17"/><ColInfo ss:Index="8" ss:Width="17"/><ColInfo ss:Index="9" ss:Width="17"/>';
-
   var xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>';
   xml+='<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
-  xml+='<Worksheet ss:Name="Foglio Ore"><Table>'+colWidths;
-
-  var allLines=lines;
-  allLines.forEach(function(line){
+  xml+='<Worksheet ss:Name="Foglio Ore"><Table>';
+  xml+='<ColInfo ss:Index="1" ss:Width="17"/><ColInfo ss:Index="2" ss:Width="25"/><ColInfo ss:Index="3" ss:Width="17"/><ColInfo ss:Index="4" ss:Width="17"/><ColInfo ss:Index="5" ss:Width="17"/><ColInfo ss:Index="6" ss:Width="17"/><ColInfo ss:Index="7" ss:Width="17"/><ColInfo ss:Index="8" ss:Width="17"/><ColInfo ss:Index="9" ss:Width="17"/>';
+  lines.forEach(function(line){
     xml+='<Row>';
     line.split(';').forEach(function(cell){
       var clean=cell.replace(/^"|"$/g,'').replace(/""/g,'"');
-      var isNum=clean!==''&&!isNaN(clean.replace(' \u20ac',''));
-      if(isNum&&clean.indexOf('\u2713')<0){
-        xml+='<Cell><Data ss:Type="Number">'+parseFloat(clean)+'</Data></Cell>';
-      } else {
-        xml+='<Cell><Data ss:Type="String">'+clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</Data></Cell>';
-      }
+      xml+='<Cell><Data ss:Type="String">'+clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</Data></Cell>';
     });
     xml+='</Row>';
   });
-
   xml+='</Table></Worksheet></Workbook>';
-
   var blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url;
-  a.download='FoglioOre_'+y+'-'+String(m+1).padStart(2,'0')+'.xls';
+  a.href=url;a.download='FoglioOre_'+y+'-'+String(m+1).padStart(2,'0')+'.xls';
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
-buildSelects();
-load();
-renderCalendar();
+buildSelects();load();renderCalendar();
 </script>
 </body>
 </html>
