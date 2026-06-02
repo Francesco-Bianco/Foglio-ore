@@ -53,6 +53,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-row input::placeholder{color:#c7c7cc}
 .form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0}
 .toggle-row{display:flex;align-items:center;padding:10px 16px}
+.toggle-row .toggle{width:44px!important;max-width:44px!important}
 .toggle-row label.lbl{font-size:15px;flex:1}
 input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
 .toggle{width:44px;height:26px;background:#e5e5ea;border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;display:inline-block}
@@ -162,10 +163,8 @@ input:checked+.toggle::after{transform:translateX(18px)}
         </div>
         <div class="form-row toggle-row">
           <label class="lbl">Notte Fuori</label>
-          <div style="flex-shrink:0;margin-right:4px">
-            <input type="checkbox" id="f-notte">
-            <label class="toggle" for="f-notte"></label>
-          </div>
+          <input type="checkbox" id="f-notte">
+          <label class="toggle" for="f-notte"></label>
         </div>
       </div>
     </div>
