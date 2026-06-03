@@ -4,12 +4,5 @@
   "start_url": "/foglio-ore/",
   "display": "standalone",
   "background_color": "#f2f2f7",
-  "theme_color": "#007aff",
-  "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+  "theme_color": "#007aff"
 }
