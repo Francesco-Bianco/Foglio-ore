@@ -552,7 +552,7 @@ function saveReminderTime(){
   note.style.display='block';
 }
 
-function scheduleNotification(){
+window.scheduleNotification = function(){
   var t=localStorage.getItem('reminder_time')||'21:00';
   clearInterval(window._reminderInterval);
   window._reminderInterval=setInterval(function(){
@@ -561,19 +561,14 @@ function scheduleNotification(){
     var mm=String(now.getMinutes()).padStart(2,'0');
     var current=hh+':'+mm;
     var today=now.toDateString();
+    console.log('Check:',current,'Target:',t);
     if(current===t && localStorage.getItem('last_notified')!==today){
       localStorage.setItem('last_notified',today);
       if(Notification.permission==='granted'){
-        navigator.serviceWorker.ready.then(function(reg){
-          reg.showNotification('📋 Foglio Ore',{
-            body:'Inserisci i dati di oggi!',
-            tag:'foglio-ore',
-            renotify:true
-          });
-        });
+        new Notification('📋 Foglio Ore',{body:'Inserisci i dati di oggi!',tag:'foglio-ore'});
       }
     }
-  },30000); // controlla ogni 30 secondi
+  },30000);
 }
 
 // Ripristina stato reminder all'avvio
