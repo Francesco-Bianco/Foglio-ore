@@ -218,27 +218,22 @@ window.fbGetDocs = getDocs;
 window.fbGetDoc = getDoc;
 
 window.loginGoogle = function() {
-  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  if (isSafari) {
-    signInWithRedirect(auth, provider);
-  } else {
-    signInWithPopup(auth, provider).catch(function(e){ 
-      // fallback a redirect se popup bloccato
-      signInWithRedirect(auth, provider);
+  signInWithPopup(auth, provider)
+    .then(function(result){
+      // onAuthStateChanged gestisce il resto
+    })
+    .catch(function(e){
+      if(e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user'){
+        alert('Popup bloccato. Abilita i popup per questo sito nelle impostazioni di Safari.');
+      } else {
+        console.error(e);
+      }
     });
-  }
 };
 
 window.logoutUser = function() {
   signOut(auth);
 };
-
-// Gestisci ritorno da redirect
-getRedirectResult(auth).then(function(result){
-  if(result && result.user) {
-    // utente loggato via redirect, onAuthStateChanged gestisce il resto
-  }
-}).catch(function(e){ console.error('redirect error:', e); });
 
 onAuthStateChanged(auth, function(user) {
   if (user) {
