@@ -141,6 +141,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <p class="settings-note">I tuoi dati sono privati e separati dagli altri utenti.</p>
     <br>
+    <div class="settings-card">
+      <div class="settings-row">
+        <label style="flex:1;font-size:15px;color:#c0c0d0">&#128276; Promemoria ore 21</label>
+        <input type="checkbox" id="reminderToggle" class="ios-toggle" onchange="toggleReminder()">
+      </div>
+      <div class="settings-row" id="reminderTimeRow" style="display:none">
+        <label style="color:#c0c0d0">Orario</label>
+        <input type="time" id="reminderTime" value="21:00" onchange="saveReminderTime()" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500">
+      </div>
+    </div>
+    <p class="settings-note" id="reminderNote" style="display:none"></p>
+    <br>
     <button class="logout-btn" onclick="logoutUser()">Esci dall'account</button>
   </div>
 </div>
@@ -421,6 +433,79 @@ function exportCSV() {
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
+function toggleReminder(){
+  var on=document.getElementById('reminderToggle').checked;
+  document.getElementById('reminderTimeRow').style.display=on?'flex':'none';
+  document.getElementById('reminderNote').style.display=on?'block':'none';
+  if(on){
+    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    var note=document.getElementById('reminderNote');
+    if(isIOS){
+      note.textContent='⚠️ Su iPhone le notifiche web non sono supportate. Usa Shortcuts: Automazione → Ora del giorno → 21:00 → Apri URL → '+window.location.href;
+      note.style.color='#ff9500';
+    } else if('Notification' in window){
+      Notification.requestPermission().then(function(p){
+        if(p==='granted'){
+          scheduleNotification();
+          note.textContent='✅ Notifiche attive! Riceverai un promemoria ogni giorno.';
+          note.style.color='#34c759';
+        } else {
+          note.textContent='❌ Permesso negato. Abilita le notifiche nelle impostazioni del browser.';
+          note.style.color='#ff453a';
+          document.getElementById('reminderToggle').checked=false;
+          document.getElementById('reminderTimeRow').style.display='none';
+          document.getElementById('reminderNote').style.display='none';
+        }
+      });
+    } else {
+      note.textContent='❌ Questo browser non supporta le notifiche.';
+      note.style.color='#ff453a';
+    }
+    localStorage.setItem('reminder_on','1');
+  } else {
+    localStorage.removeItem('reminder_on');
+    localStorage.removeItem('reminder_time');
+  }
+}
+
+function saveReminderTime(){
+  var t=document.getElementById('reminderTime').value;
+  localStorage.setItem('reminder_time',t);
+  scheduleNotification();
+}
+
+function scheduleNotification(){
+  if('serviceWorker' in navigator && 'Notification' in window && Notification.permission==='granted'){
+    var t=localStorage.getItem('reminder_time')||'21:00';
+    var parts=t.split(':');
+    var now=new Date();
+    var next=new Date();
+    next.setHours(parseInt(parts[0]),parseInt(parts[1]),0,0);
+    if(next<=now) next.setDate(next.getDate()+1);
+    var delay=next.getTime()-now.getTime();
+    clearTimeout(window._reminderTimeout);
+    window._reminderTimeout=setTimeout(function(){
+      new Notification('📋 Foglio Ore',{body:'Inserisci i dati di oggi!',icon:'/foglio-ore/icon.png'});
+      scheduleNotification();
+    },delay);
+  }
+}
+
+// Ripristina stato reminder all'avvio
+(function(){
+  var on=localStorage.getItem('reminder_on');
+  if(on){
+    var tog=document.getElementById('reminderToggle');
+    if(tog){
+      tog.checked=true;
+      document.getElementById('reminderTimeRow').style.display='flex';
+      var t=localStorage.getItem('reminder_time');
+      if(t) document.getElementById('reminderTime').value=t;
+      scheduleNotification();
+    }
+  }
+})();
+
 buildSelects();
 </script>
 </body>
