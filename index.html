@@ -14,7 +14,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .screen{display:none;min-height:100vh;padding-bottom:80px}
 .screen.active{display:block}
 
-/* LOGIN */
+/* TEMA CHIARO */
+body.light{background:#f2f2f7;color:#1c1c1e}
+body.light .header,body.light .nav,body.light .modal,body.light .modal-header{background:#fff}
+body.light .nav{border-top-color:#c6c6c8}
+body.light .header{border-bottom-color:#c6c6c8}
+body.light .month-title,body.light .modal-header h2,body.light .header h1{color:#1c1c1e}
+body.light .nav-btn{color:#8e8e93}
+body.light .nav-btn.active{color:#007aff}
+body.light .month-nav button,body.light .modal-header button,body.light .export-btn{color:#007aff}
+body.light .export-btn{background:#007aff;color:#fff}
+body.light .weekday{color:#8e8e93}
+body.light .day-cell{color:#1c1c1e}
+body.light .day-cell.today{background:#007aff;color:#fff}
+body.light .summary-bar{background:#fff;border-color:#e5e5ea}
+body.light .sum-val{color:#1c1c1e}
+body.light .sum-lbl{color:#8e8e93}
+body.light .sync-bar{color:#8e8e93}
+body.light .modal{background:#f2f2f7;border-top-color:#c6c6c8}
+body.light .modal-header{background:#fff;border-bottom-color:#c6c6c8}
+body.light .form-card{background:#fff;border-color:#e5e5ea}
+body.light .form-row{border-bottom-color:#f2f2f7}
+body.light .form-row label{color:#1c1c1e}
+body.light .form-row input[type=text],body.light .form-row input[type=number],body.light .form-row select{color:#007aff}
+body.light .form-row input::placeholder{color:#c7c7cc}
+body.light .form-row span{color:#1c1c1e!important}
+body.light .form-section-title{color:#8e8e93}
+body.light .ios-toggle{background:#e5e5ea}
+body.light .settings-card{background:#fff;border-color:#e5e5ea}
+body.light .settings-row{border-bottom-color:#f2f2f7}
+body.light .settings-row label,body.light .settings-row span{color:#1c1c1e!important}
+body.light .settings-row input[type=text]{color:#007aff}
+body.light .settings-note{color:#8e8e93}
+body.light .logout-btn{background:#f2f2f7;color:#ff3b30}
+body.light #login-screen{background:#f2f2f7}
+body.light .login-title{color:#1c1c1e}
+body.light .login-sub{color:#8e8e93}
+body.light .login-note{color:#c7c7cc}
+body.light .user-info{color:#8e8e93}
+body.light .modal-overlay{background:rgba(0,0,0,0.3)}
+
+
 #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px}
 .login-logo{font-size:64px;margin-bottom:16px}
 .login-title{font-size:28px;font-weight:700;color:#fff;margin-bottom:8px}
@@ -131,6 +171,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <p class="settings-note">Il nome appare nel file CSV esportato.</p>
+    <br>
+    <div class="settings-card">
+      <div class="settings-row">
+        <label style="flex:1;font-size:15px;color:var(--text-secondary)">🌙 Tema scuro</label>
+        <input type="checkbox" id="themeToggle" class="ios-toggle" onchange="toggleTheme()">
+      </div>
+    </div>
     <div id="userInfo" class="user-info"></div>
     <br>
     <div class="settings-card">
@@ -143,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <br>
     <div class="settings-card">
       <div class="settings-row">
-        <label style="flex:1;font-size:15px;color:#c0c0d0">&#128276; Promemoria ore 21</label>
+        <label style="flex:1;font-size:15px;color:#c0c0d0">&#128276; Promemoria</label>
         <input type="checkbox" id="reminderToggle" class="ios-toggle" onchange="toggleReminder()">
       </div>
       <div class="settings-row" id="reminderTimeRow" style="display:none">
@@ -433,6 +480,20 @@ function exportCSV() {
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
+function toggleTheme(){
+  var dark=document.getElementById('themeToggle').checked;
+  document.body.classList.toggle('light',!dark);
+  localStorage.setItem('theme', dark?'dark':'light');
+}
+
+// Ripristina tema
+(function(){
+  var t=localStorage.getItem('theme')||'dark';
+  if(t==='light') document.body.classList.add('light');
+  var tog=document.getElementById('themeToggle');
+  if(tog) tog.checked=(t==='dark');
+})();
+
 function toggleReminder(){
   var on=document.getElementById('reminderToggle').checked;
   document.getElementById('reminderTimeRow').style.display=on?'flex':'none';
