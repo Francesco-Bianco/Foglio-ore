@@ -4,78 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Foglio Ore">
 <link rel="manifest" href="/foglio-ore/manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23007aff'/%3E%3Crect x='20' y='28' width='60' height='52' rx='6' fill='none' stroke='white' stroke-width='5'/%3E%3Cline x1='35' y1='20' x2='35' y2='36' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='65' y1='20' x2='65' y2='36' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='20' y1='46' x2='80' y2='46' stroke='white' stroke-width='4'/%3E%3Ccircle cx='50' cy='66' r='10' fill='white'/%3E%3C/svg%3E">
 <title>Foglio Ore</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;min-height:100vh;color:#1c1c1e}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;min-height:100vh;color:#f0f0f5}
 .screen{display:none;min-height:100vh;padding-bottom:80px}
 .screen.active{display:block}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #c6c6c8;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{flex:1;padding:10px 0 6px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#8e8e93;font-size:10px;cursor:pointer}
-.nav-btn.active{color:#007aff}
+
+/* LOGIN */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px}
+.login-logo{font-size:64px;margin-bottom:16px}
+.login-title{font-size:28px;font-weight:700;color:#fff;margin-bottom:8px}
+.login-sub{font-size:15px;color:#555570;margin-bottom:48px;text-align:center}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1c1c1e;border:none;border-radius:12px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:320px;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.4)}
+.google-btn img{width:22px;height:22px}
+.login-note{font-size:12px;color:#3a3a50;margin-top:24px;text-align:center}
+
+.nav{position:fixed;bottom:0;left:0;right:0;background:#141420;border-top:0.5px solid #2a2a3a;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;padding:10px 0 6px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#555570;font-size:10px;cursor:pointer}
+.nav-btn.active{color:#4d9eff}
 .nav-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.header{background:#fff;padding:16px 16px 12px;border-bottom:0.5px solid #c6c6c8;position:sticky;top:0;z-index:50}
-.header h1{font-size:17px;font-weight:600;text-align:center}
+.header{background:#141420;padding:16px 16px 12px;border-bottom:0.5px solid #2a2a3a;position:sticky;top:0;z-index:50}
+.header h1{font-size:17px;font-weight:700;text-align:center;color:#fff;letter-spacing:0.5px}
 .header-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
 .month-nav{display:flex;align-items:center;gap:8px}
-.month-nav button{background:none;border:none;color:#007aff;font-size:20px;cursor:pointer;padding:4px 8px;line-height:1}
-.month-title{font-size:17px;font-weight:600;min-width:140px;text-align:center}
-.export-btn{background:#007aff;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:500;cursor:pointer}
+.month-nav button{background:none;border:none;color:#4d9eff;font-size:20px;cursor:pointer;padding:4px 8px;line-height:1}
+.month-title{font-size:17px;font-weight:700;min-width:140px;text-align:center;color:#fff}
+.export-btn{background:#4d9eff;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(77,158,255,0.4)}
 .weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 8px 0;gap:2px}
-.weekday{text-align:center;font-size:12px;color:#8e8e93;padding:4px 0;font-weight:500}
+.weekday{text-align:center;font-size:12px;color:#555570;padding:4px 0;font-weight:500}
 .days-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 8px;gap:4px}
-.day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;position:relative;font-size:15px}
-.day-cell:active{background:#e5e5ea}
-.day-cell.today{background:#007aff;color:#fff;font-weight:600}
+.day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;position:relative;font-size:15px;color:#c0c0d0}
+.day-cell:active{background:#1e1e2e}
+.day-cell.today{background:#4d9eff;color:#fff;font-weight:700;box-shadow:0 2px 10px rgba(77,158,255,0.5)}
 .day-cell.has-data::after{content:'';position:absolute;bottom:3px;width:5px;height:5px;background:#34c759;border-radius:50%}
 .day-cell.today.has-data::after{background:#fff}
 .day-cell.empty{pointer-events:none}
-.summary-bar{margin:12px 16px 0;background:#fff;border-radius:12px;padding:12px 8px;display:flex;justify-content:space-around}
-.sum-item{display:flex;flex-direction:column;align-items:center;gap:2px}
-.sum-val{font-size:14px;font-weight:600;color:#1c1c1e}
-.sum-lbl{font-size:10px;color:#8e8e93}
-.sync-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;font-size:12px;color:#8e8e93}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:#8e8e93;flex-shrink:0}
+.summary-bar{margin:12px 16px 0;background:#141420;border-radius:14px;padding:14px 8px;display:flex;justify-content:space-around;border:0.5px solid #2a2a3a}
+.sum-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sum-val{font-size:14px;font-weight:700;color:#fff}
+.sum-lbl{font-size:10px;color:#555570}
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;font-size:12px;color:#555570}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#555570;flex-shrink:0}
 .sync-dot.ok{background:#34c759}
 .sync-dot.syncing{background:#ff9500;animation:pulse 1s infinite}
-.sync-dot.error{background:#ff3b30}
+.sync-dot.error{background:#ff453a}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-end}
 .modal-overlay.open{display:flex}
-.modal{background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
-.modal-header{background:#fff;border-radius:16px 16px 0 0;padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #c6c6c8;position:sticky;top:0;z-index:10}
-.modal-header h2{font-size:15px;font-weight:600}
-.modal-header button{background:none;border:none;color:#007aff;font-size:16px;font-weight:500;cursor:pointer;padding:4px 8px}
+.modal{background:#141420;border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom);border-top:0.5px solid #2a2a3a}
+.modal-header{background:#141420;border-radius:20px 20px 0 0;padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #2a2a3a;position:sticky;top:0;z-index:10}
+.modal-header h2{font-size:15px;font-weight:700;color:#fff}
+.modal-header button{background:none;border:none;color:#4d9eff;font-size:16px;font-weight:500;cursor:pointer;padding:4px 8px}
 .modal-header .save-btn{font-weight:700}
 .form-section{margin:12px 16px 0}
-.form-section-title{font-size:12px;color:#8e8e93;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;padding:0 4px}
-.form-card{background:#fff;border-radius:12px;overflow:hidden}
-.form-row{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
+.form-section-title{font-size:11px;color:#555570;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding:0 4px}
+.form-card{background:#1c1c2e;border-radius:14px;overflow:hidden;border:0.5px solid #2a2a3a}
+.form-row{display:flex;align-items:center;padding:13px 16px;border-bottom:0.5px solid #2a2a3a;gap:12px}
 .form-row:last-child{border-bottom:none}
-.form-row label{font-size:15px;color:#1c1c1e;min-width:110px}
-.form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff}
-.form-row input::placeholder{color:#c7c7cc}
-.form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0}
-.ios-toggle{-webkit-appearance:none;appearance:none;width:44px;height:26px;background:#e5e5ea;border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;flex-grow:0;outline:none;border:none;margin:0;padding:0}
-.ios-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.25)}
+.form-row label{font-size:15px;color:#c0c0d0;min-width:110px}
+.form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500}
+.form-row input::placeholder{color:#3a3a50}
+.form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0;font-weight:500}
+.ios-toggle{-webkit-appearance:none;appearance:none;width:44px;height:26px;background:#2a2a3a;border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;flex-grow:0;outline:none;border:none;margin:0;padding:0}
+.ios-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.5)}
 .ios-toggle:checked{background:#34c759}
 .ios-toggle:checked::after{transform:translateX(18px)}
 .settings-content{padding:16px}
-.settings-card{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:16px}
-.settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #f2f2f7;gap:12px}
+.settings-card{background:#1c1c2e;border-radius:14px;overflow:hidden;margin-bottom:16px;border:0.5px solid #2a2a3a}
+.settings-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid #2a2a3a;gap:12px}
 .settings-row:last-child{border-bottom:none}
-.settings-row label{font-size:15px;min-width:80px}
-.settings-row input[type=text]{flex:1;border:none;outline:none;font-size:15px;color:#007aff;background:transparent}
-.settings-note{font-size:13px;color:#8e8e93;text-align:center;padding:0 16px}
+.settings-row label{font-size:15px;min-width:80px;color:#c0c0d0}
+.settings-row input[type=text]{flex:1;border:none;outline:none;font-size:15px;color:#4d9eff;background:transparent}
+.settings-note{font-size:13px;color:#555570;text-align:center;padding:0 16px}
+.logout-btn{width:100%;padding:14px;background:#2a2a3a;color:#ff453a;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px}
+.user-info{font-size:13px;color:#555570;text-align:center;padding:8px 16px}
 </style>
 </head>
 <body>
 
-<div class="screen active" id="screen-cal">
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">📋</div>
+  <div class="login-title">Foglio Ore</div>
+  <div class="login-sub">Accedi per salvare e sincronizzare i tuoi dati</div>
+  <button class="google-btn" onclick="loginGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+    Accedi con Google
+  </button>
+  <div class="login-note">I tuoi dati sono privati e visibili solo a te</div>
+</div>
+
+<!-- CALENDAR -->
+<div class="screen" id="screen-cal">
   <div class="header">
     <h1>Foglio Ore</h1>
     <div class="header-row">
@@ -84,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <span class="month-title" id="monthTitle"></span>
         <button onclick="changeMonth(1)">&#8250;</button>
       </div>
-      <button class="export-btn" onclick="exportCSV()">Esporta CSV</button>
+      <button class="export-btn" onclick="exportCSV()">Esporta</button>
     </div>
   </div>
   <div class="sync-bar"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">In attesa...</span></div>
@@ -96,6 +120,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="summary-bar" id="summaryBar"></div>
 </div>
 
+<!-- SETTINGS -->
 <div class="screen" id="screen-set">
   <div class="header"><h1>Impostazioni</h1></div>
   <div class="settings-content">
@@ -105,20 +130,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <input type="text" id="nameInput" placeholder="Nome Cognome" oninput="saveName()">
       </div>
     </div>
-    <p class="settings-note">Il nome appare nel file CSV esportato come intestazione del foglio ore mensile.</p>
+    <p class="settings-note">Il nome appare nel file CSV esportato.</p>
+    <div id="userInfo" class="user-info"></div>
     <br>
     <div class="settings-card">
       <div class="settings-row">
-        <label style="flex:1;font-size:15px">&#9729; Backup Firebase</label>
+        <label style="flex:1;font-size:15px;color:#c0c0d0">&#9729; Backup Firebase</label>
         <span style="font-size:14px;color:#34c759">Attivo</span>
       </div>
     </div>
-    <p class="settings-note">I dati vengono salvati automaticamente su Firebase. Puoi accedere da qualsiasi dispositivo.</p>
+    <p class="settings-note">I tuoi dati sono privati e separati dagli altri utenti.</p>
+    <br>
+    <button class="logout-btn" onclick="logoutUser()">Esci dall'account</button>
   </div>
 </div>
 
+<!-- FORM MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
-  <div class="modal" id="modal">
+  <div class="modal">
     <div class="modal-header">
       <button onclick="closeModal()">Annulla</button>
       <h2 id="modalTitle"></h2>
@@ -127,55 +156,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="form-section">
       <div class="form-section-title">Dati</div>
       <div class="form-card">
-        <div class="form-row">
-          <label>Cliente</label>
-          <input type="text" id="f-cliente" placeholder="Nome cliente">
-        </div>
-        <div class="form-row">
-          <label>Descrizione</label>
-          <input type="text" id="f-descr" placeholder="Attivita svolta">
-        </div>
+        <div class="form-row"><label>Cliente</label><input type="text" id="f-cliente" placeholder="Nome cliente"></div>
+        <div class="form-row"><label>Descrizione</label><input type="text" id="f-descr" placeholder="Attivita svolta"></div>
       </div>
     </div>
     <div class="form-section">
       <div class="form-section-title">Ore</div>
       <div class="form-card">
-        <div class="form-row">
-          <label>Ore Ordinarie</label>
-          <select id="s-ord"></select>
-        </div>
-        <div class="form-row">
-          <label>Ore Extra</label>
-          <select id="s-ext"></select>
-        </div>
-        <div class="form-row">
-          <label>Ore Ferie</label>
-          <select id="s-fer"></select>
-        </div>
-        <div class="form-row">
-          <label>Ore Permesso</label>
-          <select id="s-per"></select>
-        </div>
+        <div class="form-row"><label>Ore Ordinarie</label><select id="s-ord"></select></div>
+        <div class="form-row"><label>Ore Extra</label><select id="s-ext"></select></div>
+        <div class="form-row"><label>Ore Ferie</label><select id="s-fer"></select></div>
+        <div class="form-row"><label>Ore Permesso</label><select id="s-per"></select></div>
       </div>
     </div>
     <div class="form-section">
       <div class="form-section-title">Altro</div>
       <div class="form-card">
-        <div class="form-row">
-          <label>Nota Spese (&#8364;)</label>
-          <input type="number" id="f-spese" placeholder="0.00" step="0.01" min="0" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff">
-        </div>
-        <div class="form-row" style="justify-content:space-between">
-          <span style="font-size:15px">Notte Fuori</span>
-          <input type="checkbox" id="f-notte" class="ios-toggle">
-        </div>
+        <div class="form-row"><label>Nota Spese (&#8364;)</label><input type="number" id="f-spese" placeholder="0.00" step="0.01" min="0" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500"></div>
+        <div class="form-row" style="justify-content:space-between"><span style="font-size:15px;color:#c0c0d0">Notte Fuori</span><input type="checkbox" id="f-notte" class="ios-toggle"></div>
       </div>
     </div>
     <div style="height:24px"></div>
   </div>
 </div>
 
-<nav class="nav">
+<nav class="nav" id="mainNav" style="display:none">
   <button class="nav-btn active" id="nav-cal" onclick="showScreen('cal')">
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendario
@@ -186,10 +191,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </button>
 </nav>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYOjxIgk-IZALjnjyYbuLJ7YQvwS4xP8c",
@@ -202,121 +207,126 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 window.fbDb = db;
 window.fbSetDoc = setDoc;
-window.fbGetDoc = getDoc;
 window.fbDoc = doc;
 window.fbCollection = collection;
 window.fbGetDocs = getDocs;
+window.fbGetDoc = getDoc;
 
-// Carica tutti i dati da Firebase all'avvio
-setSyncStatus('syncing','Caricamento...');
-getDocs(collection(db,'foglio_ore')).then(function(snap){
-  snap.forEach(function(d){
-    data[d.id] = d.data();
-  });
-  // Carica nome utente
-  getDoc(doc(db,'settings','user')).then(function(d){
-    if(d.exists()){
-      userName = d.data().name || 'Francesco Bianco';
-      var el=document.getElementById('nameInput');
-      if(el) el.value = userName;
-    }
-    setSyncStatus('ok','Sincronizzato');
-    renderCalendar();
-  });
-}).catch(function(e){
-  setSyncStatus('error','Errore connessione');
-  renderCalendar();
+window.loginGoogle = function() {
+  signInWithPopup(auth, provider).catch(function(e){ alert('Errore login: '+e.message); });
+};
+
+window.logoutUser = function() {
+  signOut(auth);
+};
+
+onAuthStateChanged(auth, function(user) {
+  if (user) {
+    window.currentUid = user.uid;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('mainNav').style.display = 'flex';
+    var info = document.getElementById('userInfo');
+    if(info) info.textContent = 'Accesso come: ' + user.email;
+    loadUserData(user.uid);
+  } else {
+    window.currentUid = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('mainNav').style.display = 'none';
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    data = {};
+  }
 });
+
+function loadUserData(uid) {
+  setSyncStatus('syncing', 'Caricamento...');
+  getDocs(collection(db, 'utenti', uid, 'foglio_ore')).then(function(snap) {
+    snap.forEach(function(d) { data[d.id] = d.data(); });
+    getDoc(doc(db, 'utenti', uid, 'settings', 'user')).then(function(d) {
+      if (d.exists()) {
+        userName = d.data().name || '';
+        var el = document.getElementById('nameInput');
+        if (el) el.value = userName;
+      }
+      setSyncStatus('ok', 'Sincronizzato');
+      showScreen('cal');
+      renderCalendar();
+    });
+  }).catch(function() { setSyncStatus('error', 'Errore connessione'); showScreen('cal'); renderCalendar(); });
+}
 </script>
 
 <script>
-var data={};
-var userName='Francesco Bianco';
-var curMonth=new Date();curMonth.setDate(1);
-var editKey=null;
-var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+var data = {};
+var userName = '';
+var curMonth = new Date(); curMonth.setDate(1);
+var editKey = null;
+var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
-function setSyncStatus(state, label){
-  var dot=document.getElementById('syncDot');
-  var lbl=document.getElementById('syncLabel');
-  if(dot){dot.className='sync-dot '+state;}
-  if(lbl){lbl.textContent=label;}
+function setSyncStatus(state, label) {
+  var dot = document.getElementById('syncDot');
+  var lbl = document.getElementById('syncLabel');
+  if (dot) dot.className = 'sync-dot ' + state;
+  if (lbl) lbl.textContent = label;
 }
-
-function buildSelects(){
-  var opts='<option value="0">0h</option>';
-  for(var h=0.5;h<=24;h+=0.5){
-    var lbl=h%1===0?h+'h':h.toFixed(1)+'h';
-    opts+='<option value="'+h+'">'+lbl+'</option>';
-  }
-  ['s-ord','s-ext','s-fer','s-per'].forEach(function(id){
-    document.getElementById(id).innerHTML=opts;
-  });
+function buildSelects() {
+  var opts = '<option value="0">0h</option>';
+  for (var h = 0.5; h <= 24; h += 0.5) opts += '<option value="' + h + '">' + (h % 1 === 0 ? h + 'h' : h.toFixed(1) + 'h') + '</option>';
+  ['s-ord','s-ext','s-fer','s-per'].forEach(function(id) { document.getElementById(id).innerHTML = opts; });
 }
-
-function key(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function key(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('screen-' + s).classList.add('active');
+  document.getElementById('nav-' + s).classList.add('active');
+  if (s === 'set') { var el = document.getElementById('nameInput'); if (el) el.value = userName; }
 }
-
-function showScreen(s){
-  document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('active')});
-  document.querySelectorAll('.nav-btn').forEach(function(el){el.classList.remove('active')});
-  document.getElementById('screen-'+s).classList.add('active');
-  document.getElementById('nav-'+s).classList.add('active');
-  if(s==='set'){var el=document.getElementById('nameInput');if(el)el.value=userName;}
-}
-
-function saveName(){
-  userName=document.getElementById('nameInput').value;
-  if(window.fbDb){
-    setSyncStatus('syncing','Salvataggio...');
-    window.fbSetDoc(window.fbDoc(window.fbDb,'settings','user'),{name:userName})
-      .then(function(){setSyncStatus('ok','Sincronizzato');})
-      .catch(function(){setSyncStatus('error','Errore salvataggio');});
+function saveName() {
+  userName = document.getElementById('nameInput').value;
+  if (window.fbDb && window.currentUid) {
+    setSyncStatus('syncing', 'Salvataggio...');
+    window.fbSetDoc(window.fbDoc(window.fbDb, 'utenti', window.currentUid, 'settings', 'user'), {name: userName})
+      .then(function() { setSyncStatus('ok', 'Sincronizzato'); })
+      .catch(function() { setSyncStatus('error', 'Errore'); });
   }
 }
-
-function changeMonth(d){curMonth.setMonth(curMonth.getMonth()+d);renderCalendar();}
-
-function renderCalendar(){
-  var y=curMonth.getFullYear(),m=curMonth.getMonth();
-  document.getElementById('monthTitle').textContent=MONTHS[m]+' '+y;
-  var first=new Date(y,m,1);
-  var last=new Date(y,m+1,0);
-  var startDay=first.getDay();if(startDay===0)startDay=7;startDay--;
-  var grid=document.getElementById('daysGrid');
-  grid.innerHTML='';
-  var today=new Date();
-  for(var i=0;i<startDay;i++){var b=document.createElement('div');b.className='day-cell empty';grid.appendChild(b);}
-  for(var d=1;d<=last.getDate();d++){
-    var date=new Date(y,m,d);
-    var k=key(date);
-    var cell=document.createElement('div');
-    cell.className='day-cell';
-    if(date.getFullYear()===today.getFullYear()&&date.getMonth()===today.getMonth()&&date.getDate()===today.getDate())cell.classList.add('today');
-    if(data[k]&&hasData(data[k]))cell.classList.add('has-data');
-    cell.textContent=d;
-    (function(dk,dd){cell.onclick=function(){openModal(dk,dd);};})(k,date);
+function changeMonth(d) { curMonth.setMonth(curMonth.getMonth() + d); renderCalendar(); }
+function renderCalendar() {
+  var y = curMonth.getFullYear(), m = curMonth.getMonth();
+  document.getElementById('monthTitle').textContent = MONTHS[m] + ' ' + y;
+  var first = new Date(y, m, 1);
+  var last = new Date(y, m+1, 0);
+  var startDay = first.getDay(); if (startDay === 0) startDay = 7; startDay--;
+  var grid = document.getElementById('daysGrid');
+  grid.innerHTML = '';
+  var today = new Date();
+  for (var i = 0; i < startDay; i++) { var b = document.createElement('div'); b.className = 'day-cell empty'; grid.appendChild(b); }
+  for (var d = 1; d <= last.getDate(); d++) {
+    var date = new Date(y, m, d);
+    var k = key(date);
+    var cell = document.createElement('div');
+    cell.className = 'day-cell';
+    if (date.getFullYear()===today.getFullYear()&&date.getMonth()===today.getMonth()&&date.getDate()===today.getDate()) cell.classList.add('today');
+    if (data[k] && hasData(data[k])) cell.classList.add('has-data');
+    cell.textContent = d;
+    (function(dk, dd) { cell.onclick = function() { openModal(dk, dd); }; })(k, date);
     grid.appendChild(cell);
   }
   renderSummary();
 }
-
-function hasData(e){return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte);}
-
-function renderSummary(){
-  var y=curMonth.getFullYear(),m=curMonth.getMonth();
-  var last=new Date(y,m+1,0).getDate();
+function hasData(e) { return e && (e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte); }
+function renderSummary() {
+  var y = curMonth.getFullYear(), m = curMonth.getMonth();
+  var last = new Date(y, m+1, 0).getDate();
   var tOrd=0,tExt=0,tFer=0,tPer=0,tSpe=0,tNot=0;
-  for(var d=1;d<=last;d++){
-    var e=data[key(new Date(y,m,d))];
-    if(e){tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tPer+=e.per||0;tSpe+=e.spese||0;if(e.notte)tNot++;}
-  }
-  function fh(v){return v%1===0?v+'h':v.toFixed(1)+'h';}
-  document.getElementById('summaryBar').innerHTML=
+  for (var d = 1; d <= last; d++) { var e = data[key(new Date(y,m,d))]; if(e){tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tPer+=e.per||0;tSpe+=e.spese||0;if(e.notte)tNot++;} }
+  function fh(v) { return v%1===0?v+'h':v.toFixed(1)+'h'; }
+  document.getElementById('summaryBar').innerHTML =
     '<div class="sum-item"><span class="sum-val">'+fh(tOrd)+'</span><span class="sum-lbl">Ord.</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+fh(tExt)+'</span><span class="sum-lbl">Extra</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+fh(tFer)+'</span><span class="sum-lbl">Ferie</span></div>'+
@@ -324,63 +334,58 @@ function renderSummary(){
     '<div class="sum-item"><span class="sum-val">'+tNot+'</span><span class="sum-lbl">Notti</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+tSpe.toFixed(0)+'&#8364;</span><span class="sum-lbl">Spese</span></div>';
 }
-
-function openModal(k,date){
-  editKey=k;
-  var e=data[k]||{};
-  document.getElementById('f-cliente').value=e.cliente||'';
-  document.getElementById('f-descr').value=e.descr||'';
-  document.getElementById('f-spese').value=e.spese>0?e.spese:'';
-  document.getElementById('f-notte').checked=e.notte===true;
-  document.getElementById('s-ord').value=e.ord||0;
-  document.getElementById('s-ext').value=e.ext||0;
-  document.getElementById('s-fer').value=e.fer||0;
-  document.getElementById('s-per').value=e.per||0;
-  var DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
-  document.getElementById('modalTitle').textContent=DAYS[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
+function openModal(k, date) {
+  editKey = k;
+  var e = data[k] || {};
+  document.getElementById('f-cliente').value = e.cliente||'';
+  document.getElementById('f-descr').value = e.descr||'';
+  document.getElementById('f-spese').value = e.spese>0?e.spese:'';
+  document.getElementById('f-notte').checked = e.notte===true;
+  document.getElementById('s-ord').value = e.ord||0;
+  document.getElementById('s-ext').value = e.ext||0;
+  document.getElementById('s-fer').value = e.fer||0;
+  document.getElementById('s-per').value = e.per||0;
+  var DAYS = ['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
+  document.getElementById('modalTitle').textContent = DAYS[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
   document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 }
-
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';}
-function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
-
-function saveDay(){
-  var e={
-    cliente:document.getElementById('f-cliente').value.trim(),
-    descr:document.getElementById('f-descr').value.trim(),
-    ord:parseFloat(document.getElementById('s-ord').value)||0,
-    ext:parseFloat(document.getElementById('s-ext').value)||0,
-    fer:parseFloat(document.getElementById('s-fer').value)||0,
-    per:parseFloat(document.getElementById('s-per').value)||0,
-    spese:parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
-    notte:document.getElementById('f-notte').checked
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+function closeModalOutside(e) { if (e.target===document.getElementById('modalOverlay')) closeModal(); }
+function saveDay() {
+  var e = {
+    cliente: document.getElementById('f-cliente').value.trim(),
+    descr: document.getElementById('f-descr').value.trim(),
+    ord: parseFloat(document.getElementById('s-ord').value)||0,
+    ext: parseFloat(document.getElementById('s-ext').value)||0,
+    fer: parseFloat(document.getElementById('s-fer').value)||0,
+    per: parseFloat(document.getElementById('s-per').value)||0,
+    spese: parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
+    notte: document.getElementById('f-notte').checked
   };
-  data[editKey]=e;
+  data[editKey] = e;
   closeModal();
   renderCalendar();
-  // Salva su Firebase
-  if(window.fbDb){
-    setSyncStatus('syncing','Salvataggio...');
-    window.fbSetDoc(window.fbDoc(window.fbDb,'foglio_ore',editKey),e)
-      .then(function(){setSyncStatus('ok','Sincronizzato');})
-      .catch(function(){setSyncStatus('error','Errore salvataggio');});
+  if (window.fbDb && window.currentUid) {
+    setSyncStatus('syncing', 'Salvataggio...');
+    window.fbSetDoc(window.fbDoc(window.fbDb, 'utenti', window.currentUid, 'foglio_ore', editKey), e)
+      .then(function() { setSyncStatus('ok', 'Sincronizzato'); })
+      .catch(function() { setSyncStatus('error', 'Errore salvataggio'); });
   }
 }
-
-function exportCSV(){
-  var y=curMonth.getFullYear(),m=curMonth.getMonth();
-  var mName=MONTHS[m].toUpperCase()+' '+y;
-  var lines=[];
+function exportCSV() {
+  var y = curMonth.getFullYear(), m = curMonth.getMonth();
+  var mName = MONTHS[m].toUpperCase()+' '+y;
+  var lines = [];
   lines.push('NOME: '+userName+';;;;FOGLIO ORE MESE DI: '+mName+';;;;;');
   lines.push(';;;;;;;;;');
   lines.push('DATA;CLIENTE;DESCRIZIONE;ORE ORDINARIE;ORE EXTRA;ORE FERIE;ORE PERMESSO;NOTA SPESE;NOTTE FUORI');
-  var last=new Date(y,m+1,0).getDate();
+  var last = new Date(y,m+1,0).getDate();
   var tOrd=0,tExt=0,tFer=0,tPer=0,tSpe=0;
   function fh(v){return v<=0?'':v%1===0?''+v:v.toFixed(1);}
   function esc(s){return s.indexOf(';')>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;}
-  for(var d=1;d<=last;d++){
-    var e=data[key(new Date(y,m,d))]||{};
+  for (var d = 1; d <= last; d++) {
+    var e = data[key(new Date(y,m,d))]||{};
     tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tPer+=e.per||0;tSpe+=e.spese||0;
     lines.push([d,esc(e.cliente||''),esc(e.descr||''),fh(e.ord||0),fh(e.ext||0),fh(e.fer||0),fh(e.per||0),e.spese>0?(e.spese.toFixed(2)+' \u20ac'):'',e.notte?'\u2713':''].join(';'));
   }
@@ -406,9 +411,7 @@ function exportCSV(){
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
-
 buildSelects();
-renderCalendar();
 </script>
 </body>
 </html>
