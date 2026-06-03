@@ -542,19 +542,11 @@ function saveReminderTime(){
 }
 
 function scheduleNotification(){
-  if('serviceWorker' in navigator && 'Notification' in window && Notification.permission==='granted'){
-    var t=localStorage.getItem('reminder_time')||'21:00';
-    var parts=t.split(':');
-    var now=new Date();
-    var next=new Date();
-    next.setHours(parseInt(parts[0]),parseInt(parts[1]),0,0);
-    if(next<=now) next.setDate(next.getDate()+1);
-    var delay=next.getTime()-now.getTime();
-    clearTimeout(window._reminderTimeout);
-    window._reminderTimeout=setTimeout(function(){
-      new Notification('📋 Foglio Ore',{body:'Inserisci i dati di oggi!',icon:'/foglio-ore/icon.png'});
-      scheduleNotification();
-    },delay);
+  var t=localStorage.getItem('reminder_time')||'21:00';
+  if('serviceWorker' in navigator && Notification.permission==='granted'){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.active.postMessage({type:'SCHEDULE', time:t});
+    });
   }
 }
 
