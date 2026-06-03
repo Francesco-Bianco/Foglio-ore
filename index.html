@@ -195,7 +195,8 @@ body.light .modal-overlay{background:rgba(0,0,0,0.3)}
       </div>
       <div class="settings-row" id="reminderTimeRow" style="display:none">
         <label style="color:#c0c0d0">Orario</label>
-        <input type="time" id="reminderTime" value="21:00" onchange="saveReminderTime()" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500">
+        <input type="time" id="reminderTime" value="21:00" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500">
+        <button onclick="saveReminderTime()" style="background:#4d9eff;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;margin-left:8px">Salva</button>
       </div>
     </div>
     <p class="settings-note" id="reminderNote" style="display:none"></p>
@@ -532,7 +533,12 @@ function toggleReminder(){
 function saveReminderTime(){
   var t=document.getElementById('reminderTime').value;
   localStorage.setItem('reminder_time',t);
+  clearTimeout(window._reminderTimeout);
   scheduleNotification();
+  var note=document.getElementById('reminderNote');
+  note.textContent='✅ Promemoria impostato alle '+t;
+  note.style.color='#34c759';
+  note.style.display='block';
 }
 
 function scheduleNotification(){
@@ -553,21 +559,30 @@ function scheduleNotification(){
 }
 
 // Ripristina stato reminder all'avvio
-(function(){
+function initReminder(){
   var on=localStorage.getItem('reminder_on');
-  if(on){
-    var tog=document.getElementById('reminderToggle');
-    if(tog){
-      tog.checked=true;
-      document.getElementById('reminderTimeRow').style.display='flex';
-      var t=localStorage.getItem('reminder_time');
-      if(t) document.getElementById('reminderTime').value=t;
+  var tog=document.getElementById('reminderToggle');
+  if(on && tog){
+    tog.checked=true;
+    document.getElementById('reminderTimeRow').style.display='flex';
+    document.getElementById('reminderNote').style.display='block';
+    var t=localStorage.getItem('reminder_time')||'21:00';
+    document.getElementById('reminderTime').value=t;
+    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    var note=document.getElementById('reminderNote');
+    if(isIOS){
+      note.textContent='⚠️ Su iPhone usa Shortcuts per il promemoria.';
+      note.style.color='#ff9500';
+    } else {
+      note.textContent='✅ Notifiche attive!';
+      note.style.color='#34c759';
       scheduleNotification();
     }
   }
-})();
+}
 
 buildSelects();
+initReminder();
 </script>
 </body>
 </html>
