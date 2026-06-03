@@ -194,7 +194,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCYOjxIgk-IZALjnjyYbuLJ7YQvwS4xP8c",
@@ -218,15 +218,27 @@ window.fbGetDocs = getDocs;
 window.fbGetDoc = getDoc;
 
 window.loginGoogle = function() {
-  signInWithRedirect(auth, provider);
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isSafari) {
+    signInWithRedirect(auth, provider);
+  } else {
+    signInWithPopup(auth, provider).catch(function(e){ 
+      // fallback a redirect se popup bloccato
+      signInWithRedirect(auth, provider);
+    });
+  }
 };
 
 window.logoutUser = function() {
   signOut(auth);
 };
 
-// Gestisci il ritorno dal redirect
-getRedirectResult(auth).catch(function(e){ console.error(e); });
+// Gestisci ritorno da redirect
+getRedirectResult(auth).then(function(result){
+  if(result && result.user) {
+    // utente loggato via redirect, onAuthStateChanged gestisce il resto
+  }
+}).catch(function(e){ console.error('redirect error:', e); });
 
 onAuthStateChanged(auth, function(user) {
   if (user) {
