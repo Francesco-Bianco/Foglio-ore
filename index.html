@@ -38,6 +38,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sum-item{display:flex;flex-direction:column;align-items:center;gap:2px}
 .sum-val{font-size:14px;font-weight:600;color:#1c1c1e}
 .sum-lbl{font-size:10px;color:#8e8e93}
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;font-size:12px;color:#8e8e93}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#8e8e93;flex-shrink:0}
+.sync-dot.ok{background:#34c759}
+.sync-dot.syncing{background:#ff9500;animation:pulse 1s infinite}
+.sync-dot.error{background:#ff3b30}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end}
 .modal-overlay.open{display:flex}
 .modal{background:#f2f2f7;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
@@ -54,34 +60,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-row input[type=text],.form-row input[type=number]{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff}
 .form-row input::placeholder{color:#c7c7cc}
 .form-row select{flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#007aff;-webkit-appearance:none;appearance:none;cursor:pointer;padding:0}
-/* TOGGLE — usa appearance per forzare stile nativo iOS */
-.ios-toggle{
-  -webkit-appearance:none;
-  appearance:none;
-  width:44px;
-  height:26px;
-  background:#e5e5ea;
-  border-radius:13px;
-  position:relative;
-  cursor:pointer;
-  transition:background .2s;
-  flex-shrink:0;
-  flex-grow:0;
-  outline:none;
-  border:none;
-  margin:0;
-  padding:0;
-}
-.ios-toggle::after{
-  content:'';
-  position:absolute;
-  top:3px;left:3px;
-  width:20px;height:20px;
-  background:#fff;
-  border-radius:50%;
-  transition:transform .2s;
-  box-shadow:0 2px 4px rgba(0,0,0,.25);
-}
+.ios-toggle{-webkit-appearance:none;appearance:none;width:44px;height:26px;background:#e5e5ea;border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;flex-grow:0;outline:none;border:none;margin:0;padding:0}
+.ios-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.25)}
 .ios-toggle:checked{background:#34c759}
 .ios-toggle:checked::after{transform:translateX(18px)}
 .settings-content{padding:16px}
@@ -107,6 +87,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="export-btn" onclick="exportCSV()">Esporta CSV</button>
     </div>
   </div>
+  <div class="sync-bar"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">In attesa...</span></div>
   <div class="weekdays">
     <div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mer</div>
     <div class="weekday">Gio</div><div class="weekday">Ven</div><div class="weekday">Sab</div><div class="weekday">Dom</div>
@@ -128,11 +109,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <br>
     <div class="settings-card">
       <div class="settings-row">
-        <label style="flex:1;font-size:15px">&#128276; Promemoria serale</label>
-        <span style="font-size:14px;color:#8e8e93">Vedi sotto</span>
+        <label style="flex:1;font-size:15px">&#9729; Backup Firebase</label>
+        <span style="font-size:14px;color:#34c759">Attivo</span>
       </div>
     </div>
-    <p class="settings-note">Per il promemoria alle 21:00 apri l'app Orologio su iPhone, vai in Sveglie e aggiungi una sveglia alle 21:00 con etichetta "Foglio Ore".</p>
+    <p class="settings-note">I dati vengono salvati automaticamente su Firebase. Puoi accedere da qualsiasi dispositivo.</p>
   </div>
 </div>
 
@@ -205,12 +186,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </button>
 </nav>
 
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCYOjxIgk-IZALjnjyYbuLJ7YQvwS4xP8c",
+  authDomain: "foglio-ore-eae7d.firebaseapp.com",
+  projectId: "foglio-ore-eae7d",
+  storageBucket: "foglio-ore-eae7d.firebasestorage.app",
+  messagingSenderId: "185012054694",
+  appId: "1:185012054694:web:113f6ba3a82501b6776267"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.fbDb = db;
+window.fbSetDoc = setDoc;
+window.fbGetDoc = getDoc;
+window.fbDoc = doc;
+window.fbCollection = collection;
+window.fbGetDocs = getDocs;
+
+// Carica tutti i dati da Firebase all'avvio
+setSyncStatus('syncing','Caricamento...');
+getDocs(collection(db,'foglio_ore')).then(function(snap){
+  snap.forEach(function(d){
+    data[d.id] = d.data();
+  });
+  // Carica nome utente
+  getDoc(doc(db,'settings','user')).then(function(d){
+    if(d.exists()){
+      userName = d.data().name || 'Francesco Bianco';
+      var el=document.getElementById('nameInput');
+      if(el) el.value = userName;
+    }
+    setSyncStatus('ok','Sincronizzato');
+    renderCalendar();
+  });
+}).catch(function(e){
+  setSyncStatus('error','Errore connessione');
+  renderCalendar();
+});
+</script>
+
 <script>
 var data={};
 var userName='Francesco Bianco';
 var curMonth=new Date();curMonth.setDate(1);
 var editKey=null;
 var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function setSyncStatus(state, label){
+  var dot=document.getElementById('syncDot');
+  var lbl=document.getElementById('syncLabel');
+  if(dot){dot.className='sync-dot '+state;}
+  if(lbl){lbl.textContent=label;}
+}
 
 function buildSelects(){
   var opts='<option value="0">0h</option>';
@@ -222,16 +256,11 @@ function buildSelects(){
     document.getElementById(id).innerHTML=opts;
   });
 }
-function load(){
-  try{var d=localStorage.getItem('fo_data');if(d)data=JSON.parse(d);}catch(e){}
-  try{var n=localStorage.getItem('fo_name');if(n){userName=n;var el=document.getElementById('nameInput');if(el)el.value=n;}}catch(e){}
-}
-function persist(){
-  try{localStorage.setItem('fo_data',JSON.stringify(data));localStorage.setItem('fo_name',userName);}catch(e){}
-}
+
 function key(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+
 function showScreen(s){
   document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('active')});
   document.querySelectorAll('.nav-btn').forEach(function(el){el.classList.remove('active')});
@@ -239,8 +268,19 @@ function showScreen(s){
   document.getElementById('nav-'+s).classList.add('active');
   if(s==='set'){var el=document.getElementById('nameInput');if(el)el.value=userName;}
 }
-function saveName(){userName=document.getElementById('nameInput').value;persist();}
+
+function saveName(){
+  userName=document.getElementById('nameInput').value;
+  if(window.fbDb){
+    setSyncStatus('syncing','Salvataggio...');
+    window.fbSetDoc(window.fbDoc(window.fbDb,'settings','user'),{name:userName})
+      .then(function(){setSyncStatus('ok','Sincronizzato');})
+      .catch(function(){setSyncStatus('error','Errore salvataggio');});
+  }
+}
+
 function changeMonth(d){curMonth.setMonth(curMonth.getMonth()+d);renderCalendar();}
+
 function renderCalendar(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   document.getElementById('monthTitle').textContent=MONTHS[m]+' '+y;
@@ -264,26 +304,27 @@ function renderCalendar(){
   }
   renderSummary();
 }
+
 function hasData(e){return e&&(e.cliente||e.descr||e.ord>0||e.ext>0||e.fer>0||e.per>0||e.spese!=0||e.notte);}
+
 function renderSummary(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   var last=new Date(y,m+1,0).getDate();
-  var tOrd=0,tExt=0,tFer=0,tSpe=0,tNot=0;
+  var tOrd=0,tExt=0,tFer=0,tPer=0,tSpe=0,tNot=0;
   for(var d=1;d<=last;d++){
     var e=data[key(new Date(y,m,d))];
-    if(e){tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tSpe+=e.spese||0;if(e.notte)tNot++;}
+    if(e){tOrd+=e.ord||0;tExt+=e.ext||0;tFer+=e.fer||0;tPer+=e.per||0;tSpe+=e.spese||0;if(e.notte)tNot++;}
   }
-  var tPer2=0;
-  for(var d2=1;d2<=last;d2++){var e2=data[key(new Date(y,m,d2))];if(e2)tPer2+=e2.per||0;}
   function fh(v){return v%1===0?v+'h':v.toFixed(1)+'h';}
   document.getElementById('summaryBar').innerHTML=
     '<div class="sum-item"><span class="sum-val">'+fh(tOrd)+'</span><span class="sum-lbl">Ord.</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+fh(tExt)+'</span><span class="sum-lbl">Extra</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+fh(tFer)+'</span><span class="sum-lbl">Ferie</span></div>'+
-    '<div class="sum-item"><span class="sum-val">'+fh(tPer2)+'</span><span class="sum-lbl">Perm.</span></div>'+
+    '<div class="sum-item"><span class="sum-val">'+fh(tPer)+'</span><span class="sum-lbl">Perm.</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+tNot+'</span><span class="sum-lbl">Notti</span></div>'+
     '<div class="sum-item"><span class="sum-val">'+tSpe.toFixed(0)+'&#8364;</span><span class="sum-lbl">Spese</span></div>';
 }
+
 function openModal(k,date){
   editKey=k;
   var e=data[k]||{};
@@ -300,8 +341,10 @@ function openModal(k,date){
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
+
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';}
 function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
 function saveDay(){
   var e={
     cliente:document.getElementById('f-cliente').value.trim(),
@@ -313,8 +356,18 @@ function saveDay(){
     spese:parseFloat(document.getElementById('f-spese').value.replace(',','.'))||0,
     notte:document.getElementById('f-notte').checked
   };
-  data[editKey]=e;persist();closeModal();renderCalendar();
+  data[editKey]=e;
+  closeModal();
+  renderCalendar();
+  // Salva su Firebase
+  if(window.fbDb){
+    setSyncStatus('syncing','Salvataggio...');
+    window.fbSetDoc(window.fbDoc(window.fbDb,'foglio_ore',editKey),e)
+      .then(function(){setSyncStatus('ok','Sincronizzato');})
+      .catch(function(){setSyncStatus('error','Errore salvataggio');});
+  }
 }
+
 function exportCSV(){
   var y=curMonth.getFullYear(),m=curMonth.getMonth();
   var mName=MONTHS[m].toUpperCase()+' '+y;
@@ -353,26 +406,9 @@ function exportCSV(){
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
-buildSelects();load();renderCalendar();
 
-// Service Worker + Notifiche
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/foglio-ore/sw.js').then(function(reg) {
-    if('Notification' in window) {
-      if(Notification.permission === 'default') {
-        setTimeout(function() {
-          Notification.requestPermission().then(function(perm) {
-            if(perm === 'granted' && reg.active) {
-              reg.active.postMessage({type:'SCHEDULE_NOTIFICATION'});
-            }
-          });
-        }, 2000);
-      } else if(Notification.permission === 'granted' && reg.active) {
-        reg.active.postMessage({type:'SCHEDULE_NOTIFICATION'});
-      }
-    }
-  });
-}
+buildSelects();
+renderCalendar();
 </script>
 </body>
 </html>
