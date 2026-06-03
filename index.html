@@ -353,6 +353,25 @@ function exportCSV(){
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
 buildSelects();load();renderCalendar();
+
+// Service Worker + Notifiche
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/foglio-ore/sw.js').then(function(reg) {
+    if('Notification' in window) {
+      if(Notification.permission === 'default') {
+        setTimeout(function() {
+          Notification.requestPermission().then(function(perm) {
+            if(perm === 'granted' && reg.active) {
+              reg.active.postMessage({type:'SCHEDULE_NOTIFICATION'});
+            }
+          });
+        }, 2000);
+      } else if(Notification.permission === 'granted' && reg.active) {
+        reg.active.postMessage({type:'SCHEDULE_NOTIFICATION'});
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
