@@ -532,9 +532,19 @@ function toggleReminder(){
 }
 
 function saveReminderTime(){
-  var t=document.getElementById('reminderTime').value;
+  var raw=document.getElementById('reminderTime').value;
+  // Normalizza il formato a HH:MM
+  var t='21:00';
+  if(raw.indexOf(':')>=0){
+    t=raw;
+  } else if(raw.indexOf('.')>=0){
+    var parts=raw.split('.');
+    t=parts[0].padStart(2,'0')+':'+(parts[1]||'00').padStart(2,'0');
+  } else if(raw.length<=2){
+    t=raw.padStart(2,'0')+':00';
+  }
   localStorage.setItem('reminder_time',t);
-  clearTimeout(window._reminderTimeout);
+  clearInterval(window._reminderInterval);
   scheduleNotification();
   var note=document.getElementById('reminderNote');
   note.textContent='✅ Promemoria impostato alle '+t;
