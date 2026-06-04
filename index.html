@@ -475,7 +475,7 @@ function exportCSV() {
     lines.push([d,esc(e.cliente||''),esc(e.descr||''),fh(e.ord||0),fh(e.ext||0),fh(e.fer||0),fh(e.per||0),e.spese>0?(e.spese.toFixed(2)+' \u20ac'):'',e.notte?'\u2713':''].join(';'));
   }
   function fht(v){return v%1===0?''+v:v.toFixed(1);}
-  lines.push(';TOTALE MESE:;;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+fht(tPer)+';'+tSpe.toFixed(2)+' \u20ac;');
+  lines.push(';TOTALE MESE:;;'+fht(tOrd)+';'+fht(tExt)+';'+fht(tFer)+';'+fht(tPer)+';'+tSpe.toFixed(2)+' \u20ac;');
   var xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>';
   xml+='<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
   xml+='<Worksheet ss:Name="Foglio Ore"><Table>';
