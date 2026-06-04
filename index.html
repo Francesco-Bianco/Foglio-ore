@@ -535,7 +535,6 @@ function toggleReminder(){
 
 function saveReminderTime(){
   var raw=document.getElementById('reminderTime').value;
-  // Normalizza il formato a HH:MM
   var t='21:00';
   if(raw.indexOf(':')>=0){
     t=raw;
@@ -546,6 +545,7 @@ function saveReminderTime(){
     t=raw.padStart(2,'0')+':00';
   }
   localStorage.setItem('reminder_time',t);
+  localStorage.removeItem('last_notified'); // resetta così suona anche oggi
   clearInterval(window._reminderInterval);
   scheduleNotification();
   var note=document.getElementById('reminderNote');
@@ -562,10 +562,10 @@ window.scheduleNotification = function(){
     var hh=String(now.getHours()).padStart(2,'0');
     var mm=String(now.getMinutes()).padStart(2,'0');
     var current=hh+':'+mm;
-    var today=now.toDateString();
-    console.log('Check:',current,'Target:',t);
-    if(current===t && localStorage.getItem('last_notified')!==today){
-      localStorage.setItem('last_notified',today);
+    var todayStr=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    var lastNotified=localStorage.getItem('last_notified');
+    if(current===t && lastNotified!==todayStr){
+      localStorage.setItem('last_notified',todayStr);
       if(Notification.permission==='granted'){
         new Notification('📋 Foglio Ore',{body:'Inserisci i dati di oggi!',tag:'foglio-ore'});
       }
