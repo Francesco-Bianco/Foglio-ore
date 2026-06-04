@@ -192,17 +192,13 @@ body.light .ios-toggle:checked{background:#34c759}
     <p class="settings-note">I tuoi dati sono privati e separati dagli altri utenti.</p>
     <br>
     <div class="settings-card">
-      <div class="settings-row">
-        <label style="flex:1;font-size:15px;color:#c0c0d0">&#128276; Promemoria</label>
-        <input type="checkbox" id="reminderToggle" class="ios-toggle" onchange="toggleReminder()">
-      </div>
-      <div class="settings-row" id="reminderTimeRow" style="display:none">
-        <label style="color:#c0c0d0">Orario</label>
-        <input type="time" id="reminderTime" value="21:00" style="flex:1;border:none;outline:none;font-size:15px;text-align:right;background:transparent;color:#4d9eff;font-weight:500">
-        <button onclick="saveReminderTime()" style="background:#4d9eff;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;margin-left:8px">Salva</button>
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+        <span style="font-size:15px;color:#c0c0d0">&#128276; Promemoria giornaliero</span>
+        <span style="font-size:13px;color:#555570">📱 <b style="color:#c0c0d0">iPhone:</b> Apri Shortcuts → Automazione → + → Ora del giorno → imposta l'orario → Apri URL → incolla il link dell'app</span>
+        <span style="font-size:13px;color:#555570">🤖 <b style="color:#c0c0d0">Android:</b> Apri Google Calendar → crea evento ricorrente ogni giorno all'orario desiderato → titolo "Foglio Ore"</span>
+        <span style="font-size:13px;color:#555570">💻 <b style="color:#c0c0d0">Windows:</b> Funziona automaticamente se Chrome è aperto</span>
       </div>
     </div>
-    <p class="settings-note" id="reminderNote" style="display:none"></p>
     <br>
     <button class="logout-btn" onclick="logoutUser()">Esci dall'account</button>
   </div>
