@@ -7,14 +7,10 @@
   "theme_color": "#007aff",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192x192/007aff/ffffff?text=FO",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://via.placeholder.com/512x512/007aff/ffffff?text=FO",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/Foglio-ore/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
